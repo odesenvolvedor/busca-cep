@@ -3,24 +3,18 @@ $(document).ready(function () {
     var somenteNumeros = function (valor) {
         return valor.replace(/\D/g, '');
     };
-    var trim = function (valor) {
-        return valor.replace(" ", "");
-    };
 
-    var consultaCep1 = function (cep) {
-        if (cep != '75000-000' && cep.length >= 9) {
+    var buscaCep = function (cep) {
+        if (cep != '00000-000' && cep.length >= 9) {
             $.get("http://apps.widenet.com.br/busca-cep/api/cep.json", {code: cep}, function (result) {
                 if (result.status != 1) {
-                    console.log('Erro na Busca de CEP 1. Tentando em Outro Servidor');
+                    //Se falhar no servidor 1, então busca no servidor 2.
                     $.getJSON("//viacep.com.br/ws/" + somenteNumeros(cep) + "/json/?callback=?", function (dados) {
                         if (!("erro" in dados)) {
                             $("input#cidade").val(dados.localidade);
                             $("input#bairro").val(dados.bairro);
                             $("input#logradouro").val(dados.logradouro);
                             $('#uf').val(dados.uf);
-                            console.log('Achou o CEP na Busca 2.')
-                        } else {
-                            console.log('Erro Busca 2');
                         }
                     });
                 } else {
@@ -36,16 +30,16 @@ $(document).ready(function () {
 
     $('#cep').on('keyup blur', function (e) {
         var valor = $(this).val();
-        //Nova variável "cep" somente com dígitos.
+        //CEP com apenas números
         var cep = somenteNumeros(valor);
 
-        //Verifica se campo cep possui valor informado.
+        //Verifica se campo cep não está vazio
         if (cep != "") {
             //Expressão regular para validar o CEP.
             var validacep = /^[0-9]{8}$/;
             //Valida o formato do CEP.
             if (validacep.test(cep)) {
-                consultaCep1(valor);
+                buscaCep(valor);
             }
         }
     });
